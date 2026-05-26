@@ -6,7 +6,8 @@ type GuestRow = {
   departure_date: string | null
   departure_time: string | null
   hotel_confirmation: string | null
-  bonvoy_number: string | null
+  marriott_loyalty: string | null
+  hilton_loyalty: string | null
 }
 
 const HEADER_MAP: Record<string, keyof GuestRow> = {
@@ -19,9 +20,12 @@ const HEADER_MAP: Record<string, keyof GuestRow> = {
   'departure time': 'departure_time',
   'hotel conf': 'hotel_confirmation',
   'hotel confirmation': 'hotel_confirmation',
-  'loyalty #': 'bonvoy_number',
-  'loyalty number': 'bonvoy_number',
-  'hotel loyalty #': 'bonvoy_number',
+  'marriott #': 'marriott_loyalty',
+  'marriott loyalty': 'marriott_loyalty',
+  'bonvoy #': 'marriott_loyalty',
+  'hilton #': 'hilton_loyalty',
+  'hilton honors': 'hilton_loyalty',
+  'hilton loyalty': 'hilton_loyalty',
 }
 
 function parseDate(raw: string, fallbackYear: number): string | null {
@@ -118,7 +122,8 @@ export function parseCanvasText(text: string, tripYear: number): GuestRow[] {
       departure_date: row.departure_date ?? null,
       departure_time: row.departure_time ?? null,
       hotel_confirmation: row.hotel_confirmation ?? null,
-      bonvoy_number: row.bonvoy_number ?? null,
+      marriott_loyalty: row.marriott_loyalty ?? null,
+      hilton_loyalty: row.hilton_loyalty ?? null,
     })
   }
 

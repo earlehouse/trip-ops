@@ -41,7 +41,7 @@ export async function syncGuestsFromCanvasText(
       departure_date: guest.departure_date,
       departure_time: guest.departure_time,
       hotel_confirmation: guest.hotel_confirmation,
-      bonvoy_number: guest.bonvoy_number,
+      marriott_loyalty: guest.marriott_loyalty,
     }
 
     const { data: existing } = await supabase

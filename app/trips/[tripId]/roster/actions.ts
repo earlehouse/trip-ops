@@ -13,7 +13,7 @@ export async function addGuest(tripId: string, teamId: string | null) {
   const { data, error } = await supabase
     .from('guests')
     .insert({ trip_id: tripId, team_id: teamId, name: 'New guest' } as Record<string, unknown>)
-    .select('id, trip_id, team_id, name, phone_number, arrival_date, arrival_time, departure_date, departure_time, hotel_confirmation, bonvoy_number, notes')
+    .select('id, trip_id, team_id, name, phone_number, arrival_date, arrival_time, departure_date, departure_time, hotel_confirmation, marriott_loyalty, hilton_loyalty, notes')
     .single()
   if (error) throw new Error(error.message)
   revalidatePath(`/trips/${tripId}/roster`)

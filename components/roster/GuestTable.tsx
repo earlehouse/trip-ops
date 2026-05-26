@@ -42,7 +42,7 @@ export function GuestTable({ tripId, trip, initialGuests, teams }: Props) {
 
   async function handleAdd() {
     try {
-      const g = await addGuest(tripId, null) as Guest
+      const g = await addGuest(tripId, null) as unknown as Guest
       setGuests(prev => [...prev, { ...g, team: null }])
     } catch { toast('Failed to add guest', 'error') }
   }
