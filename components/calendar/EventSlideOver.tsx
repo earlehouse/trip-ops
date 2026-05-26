@@ -69,7 +69,7 @@ export function EventSlideOver({ event, newEventDefaults, tripId, teams, onClose
     try {
       if (isNew) {
         const created = await createEventWithTeams(tripId, fields, appliesToAll ? teams.map(t => t.id) : teamIds)
-        const newEv: CalendarEvent = { ...(created as CalendarEvent), teamIds: appliesToAll ? teams.map(t => t.id) : teamIds }
+        const newEv: CalendarEvent = { ...(created as unknown as CalendarEvent), teamIds: appliesToAll ? teams.map(t => t.id) : teamIds }
         onCreate(newEv)
         toast('Event created')
       } else {
@@ -118,7 +118,7 @@ export function EventSlideOver({ event, newEventDefaults, tripId, teams, onClose
     try {
       const effectiveTeamIds = appliesToAll ? teams.map(t => t.id) : teamIds
       const created = await createEventWithTeams(tripId, fields, effectiveTeamIds)
-      const newEv: CalendarEvent = { ...(created as CalendarEvent), teamIds: effectiveTeamIds }
+      const newEv: CalendarEvent = { ...(created as unknown as CalendarEvent), teamIds: effectiveTeamIds }
       onCreate(newEv)
       toast('Event copied')
       onClose()
