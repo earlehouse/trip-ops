@@ -1,6 +1,6 @@
 'use client'
 import { useState } from 'react'
-import { X, Trash2 } from 'lucide-react'
+import { X, Trash2, Copy } from 'lucide-react'
 import { cn, formatTime } from '@/lib/utils'
 import { StatusDot, statusLabel } from '@/components/ui/StatusDot'
 import {
@@ -45,6 +45,7 @@ export function EventSlideOver({ event, newEventDefaults, tripId, teams, onClose
     event?.teamIds ?? (newEventDefaults?.teamId ? [newEventDefaults.teamId] : [])
   )
   const [saving, setSaving] = useState(false)
+  const [copying, setCopying] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
 
   function toggleTeam(id: string) {
@@ -97,6 +98,35 @@ export function EventSlideOver({ event, newEventDefaults, tripId, teams, onClose
       onDelete(event.id)
       toast('Event deleted')
     } catch { toast('Failed to delete', 'error') }
+  }
+
+  async function handleCopy() {
+    if (!event) return
+    setCopying(true)
+    const fields = {
+      title: title.trim() || 'Untitled',
+      date,
+      start_time: startTime ? startTime + ':00' : null,
+      end_time: endTime ? endTime + ':00' : null,
+      is_fuzzy_time: isFuzzy,
+      applies_to_all_teams: appliesToAll,
+      booking_status: status,
+      venue: venue || null,
+      headcount: headcount ? Number(headcount) : null,
+      notes: notes || null,
+    }
+    try {
+      const effectiveTeamIds = appliesToAll ? teams.map(t => t.id) : teamIds
+      const created = await createEventWithTeams(tripId, fields, effectiveTeamIds)
+      const newEv: CalendarEvent = { ...(created as CalendarEvent), teamIds: effectiveTeamIds }
+      onCreate(newEv)
+      toast('Event copied')
+      onClose()
+    } catch {
+      toast('Failed to copy', 'error')
+    } finally {
+      setCopying(false)
+    }
   }
 
   return (
@@ -235,9 +265,14 @@ export function EventSlideOver({ event, newEventDefaults, tripId, teams, onClose
                 <button onClick={() => setConfirmDelete(false)} className="text-xs text-gray-500 hover:underline">Cancel</button>
               </div>
             ) : (
-              <button onClick={() => setConfirmDelete(true)} className="flex items-center gap-1 text-sm text-gray-400 hover:text-red-500 mr-auto">
-                <Trash2 size={14} /> Delete
-              </button>
+              <div className="flex items-center gap-3 mr-auto">
+                <button onClick={() => setConfirmDelete(true)} className="flex items-center gap-1 text-sm text-gray-400 hover:text-red-500">
+                  <Trash2 size={14} /> Delete
+                </button>
+                <button onClick={handleCopy} disabled={copying} className="flex items-center gap-1 text-sm text-gray-400 hover:text-indigo-600 disabled:opacity-60">
+                  <Copy size={14} /> {copying ? 'Copying…' : 'Copy'}
+                </button>
+              </div>
             )
           )}
           <button onClick={onClose} className="px-3 py-2 text-sm text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 ml-auto">

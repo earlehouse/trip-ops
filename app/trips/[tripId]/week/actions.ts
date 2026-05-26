@@ -3,10 +3,11 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import type { Event } from '@/lib/supabase/types'
 
-export async function updateEvent(id: string, fields: Record<string, unknown>) {
+export async function updateEvent(id: string, fields: Record<string, unknown>, tripId?: string) {
   const supabase = await createClient()
   const { error } = await supabase.from('events').update(fields as Record<string, unknown>).eq('id', id)
   if (error) throw new Error(error.message)
+  if (tripId) revalidatePath(`/trips/${tripId}/week`)
 }
 
 export async function createEvent(tripId: string, fields: Record<string, unknown>) {

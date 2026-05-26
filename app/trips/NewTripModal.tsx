@@ -8,8 +8,15 @@ import { cn } from '@/lib/utils'
 const TEAM_COLORS = ['#7F77DD', '#1D9E75', '#378ADD', '#E07B39', '#C94F7C', '#9ca3af']
 
 interface TeamRow { name: string; headcount: number; color: string }
+interface GroupOption { id: string; name: string }
 
-export function NewTripModal({ onClose }: { onClose: () => void }) {
+export function NewTripModal({
+  onClose,
+  groups = [],
+}: {
+  onClose: () => void
+  groups?: GroupOption[]
+}) {
   const router = useRouter()
   const formRef = useRef<HTMLFormElement>(null)
   const [loading, setLoading] = useState(false)
@@ -67,6 +74,30 @@ export function NewTripModal({ onClose }: { onClose: () => void }) {
               <input name="end_date" type="date" required
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400" />
             </div>
+          </div>
+
+          {groups.length > 0 && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Group <span className="text-gray-400 font-normal">(optional)</span>
+              </label>
+              <select
+                name="group_id"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white"
+              >
+                <option value="">No group (standalone trip)</option>
+                {groups.map(g => (
+                  <option key={g.id} value={g.id}>{g.name}</option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Slack canvas URL <span className="text-gray-400 font-normal">(optional)</span></label>
+            <input name="slack_canvas_url" type="url" placeholder="https://app.slack.com/canvas/…"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400" />
+            <p className="mt-1 text-xs text-gray-400">Paste the canvas URL to enable automatic roster sync from Slack</p>
           </div>
 
           <div>

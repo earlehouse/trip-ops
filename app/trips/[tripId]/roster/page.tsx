@@ -11,7 +11,7 @@ export default async function RosterPage({ params }: { params: Promise<{ tripId:
     supabase.from('trips').select('*').eq('id', tripId).single(),
     supabase
       .from('guests')
-      .select('*, team:teams(*)')
+      .select('id, trip_id, team_id, name, phone_number, arrival_date, arrival_time, departure_date, departure_time, hotel_confirmation, bonvoy_number, notes, team:teams(id, trip_id, name, headcount, color)')
       .eq('trip_id', tripId)
       .order('arrival_date')
       .order('arrival_time'),
@@ -26,7 +26,7 @@ export default async function RosterPage({ params }: { params: Promise<{ tripId:
     <GuestTable
       tripId={tripId}
       trip={trip}
-      initialGuests={(guestsRaw ?? []) as Parameters<typeof GuestTable>[0]['initialGuests']}
+      initialGuests={(guestsRaw ?? []) as unknown as Parameters<typeof GuestTable>[0]['initialGuests']}
       teams={teams}
     />
   )

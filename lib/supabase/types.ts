@@ -3,6 +3,18 @@ export type Json = string | number | boolean | null | { [key: string]: Json } | 
 export interface Database {
   public: {
     Tables: {
+      trip_groups: {
+        Row: {
+          id: string
+          name: string
+          start_date: string
+          end_date: string
+          notes: string | null
+          created_at: string
+        }
+        Insert: Omit<Database['public']['Tables']['trip_groups']['Row'], 'id' | 'created_at'> & { id?: string; created_at?: string }
+        Update: Partial<Database['public']['Tables']['trip_groups']['Insert']>
+      }
       trips: {
         Row: {
           id: string
@@ -10,6 +22,8 @@ export interface Database {
           office_location: string
           start_date: string
           end_date: string
+          slack_canvas_url: string | null
+          group_id: string | null
           created_at: string
         }
         Insert: Omit<Database['public']['Tables']['trips']['Row'], 'id' | 'created_at'> & { id?: string; created_at?: string }
@@ -40,11 +54,26 @@ export interface Database {
           departure_flight: string | null
           transport_mode: string | null
           special_requests: string | null
-          bonvoy_number: string | null
+          marriott_loyalty: string | null
+          hilton_loyalty: string | null
+          phone_number: string | null
+          hotel_confirmation: string | null
           notes: string | null
+          traveler_id: string | null
         }
         Insert: Omit<Database['public']['Tables']['guests']['Row'], 'id'> & { id?: string }
         Update: Partial<Database['public']['Tables']['guests']['Insert']>
+      }
+      travelers: {
+        Row: {
+          id: string
+          name: string
+          marriott_loyalty: string | null
+          hilton_loyalty: string | null
+          created_at: string
+        }
+        Insert: Omit<Database['public']['Tables']['travelers']['Row'], 'id' | 'created_at'> & { id?: string; created_at?: string }
+        Update: Partial<Database['public']['Tables']['travelers']['Insert']>
       }
       events: {
         Row: {
@@ -60,6 +89,7 @@ export interface Database {
           venue: string | null
           headcount: number | null
           notes: string | null
+          is_shared: boolean
           created_at: string
         }
         Insert: Omit<Database['public']['Tables']['events']['Row'], 'id' | 'created_at'> & { id?: string; created_at?: string }
@@ -93,7 +123,8 @@ export interface Database {
 }
 
 // Convenience types
-export type Trip = Database['public']['Tables']['trips']['Row']
+export type TripGroup = Database['public']['Tables']['trip_groups']['Row']
+export type Trip = Database['public']['Tables']['trips']['Row'] & { slack_canvas_url?: string | null }
 export type Team = Database['public']['Tables']['teams']['Row']
 export type Guest = Database['public']['Tables']['guests']['Row']
 export type Event = Database['public']['Tables']['events']['Row']
@@ -103,3 +134,4 @@ export type Booking = Database['public']['Tables']['bookings']['Row']
 export type EventWithTeams = Event & { teams: Team[] }
 export type GuestWithTeam = Guest & { team: Team | null }
 export type TripWithTeams = Trip & { teams: Team[] }
+export type TravelerRow = Database['public']['Tables']['travelers']['Row']

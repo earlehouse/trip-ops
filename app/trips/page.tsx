@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { TripListClient } from './TripListClient'
-import type { Trip, Team } from '@/lib/supabase/types'
+import type { Trip, Team, TripGroup } from '@/lib/supabase/types'
 
 export default async function TripsPage() {
   const supabase = await createClient()
@@ -42,5 +42,29 @@ export default async function TripsPage() {
     unresolvedBookings: unresolvedByTrip[t.id] ?? 0,
   }))
 
-  return <TripListClient trips={enrichedTrips} />
+  // Fetch all groups
+  const { data: groupsRaw } = await supabase
+    .from('trip_groups')
+    .select('id, name, start_date, end_date, notes, created_at')
+    .order('start_date', { ascending: true })
+  const groups = (groupsRaw ?? []) as TripGroup[]
+
+  // Separate standalone trips (no group_id) from sub-trips
+  const standaloneTrips = enrichedTrips.filter(t => !t.group_id)
+  const subTripsByGroup: Record<string, typeof enrichedTrips> = {}
+  for (const t of enrichedTrips) {
+    if (t.group_id) {
+      if (!subTripsByGroup[t.group_id]) subTripsByGroup[t.group_id] = []
+      subTripsByGroup[t.group_id].push(t)
+    }
+  }
+
+  return (
+    <TripListClient
+      standaloneTrips={standaloneTrips}
+      groups={groups}
+      subTripsByGroup={subTripsByGroup}
+      allGroups={groups.map(g => ({ id: g.id, name: g.name }))}
+    />
+  )
 }

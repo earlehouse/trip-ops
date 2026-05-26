@@ -1,7 +1,6 @@
 'use server'
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
-import type { Guest } from '@/lib/supabase/types'
 
 export async function updateGuest(id: string, field: string, value: string | null) {
   const supabase = await createClient()
@@ -14,11 +13,11 @@ export async function addGuest(tripId: string, teamId: string | null) {
   const { data, error } = await supabase
     .from('guests')
     .insert({ trip_id: tripId, team_id: teamId, name: 'New guest' } as Record<string, unknown>)
-    .select()
+    .select('id, trip_id, team_id, name, phone_number, arrival_date, arrival_time, departure_date, departure_time, hotel_confirmation, bonvoy_number, notes')
     .single()
   if (error) throw new Error(error.message)
   revalidatePath(`/trips/${tripId}/roster`)
-  return data as Guest
+  return data
 }
 
 export async function deleteGuest(tripId: string, guestId: string) {
