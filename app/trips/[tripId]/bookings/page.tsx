@@ -1,3 +1,4 @@
+import { headers } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import { BookingTracker } from '@/components/bookings/BookingTracker'
@@ -36,5 +37,19 @@ export default async function BookingsPage({ params }: { params: Promise<{ tripI
     teamIds: (ev.event_teams as Array<{ team_id: string }>).map(et => et.team_id),
   }))
 
-  return <BookingTracker tripId={tripId} initialEvents={events} teams={teams} />
+  const headersList = await headers()
+  const host = headersList.get('host') ?? 'localhost:3000'
+  const protocol = host.startsWith('localhost') ? 'http' : 'https'
+  const calendarUrl = `webcal://${host}/api/trips/${tripId}/calendar`
+  const calendarHttpUrl = `${protocol}://${host}/api/trips/${tripId}/calendar`
+
+  return (
+    <BookingTracker
+      tripId={tripId}
+      initialEvents={events}
+      teams={teams}
+      calendarUrl={calendarUrl}
+      calendarHttpUrl={calendarHttpUrl}
+    />
+  )
 }

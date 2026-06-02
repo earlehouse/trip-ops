@@ -1,6 +1,6 @@
 'use client'
 import { useState } from 'react'
-import { ClipboardCopy, CalendarPlus, CalendarDays } from 'lucide-react'
+import { ClipboardCopy, CalendarPlus, CalendarDays, Share2 } from 'lucide-react'
 import { formatTime } from '@/lib/utils'
 import { buildGCalUrl } from '@/lib/gcal'
 import { StatusPill } from './StatusPill'
@@ -16,13 +16,13 @@ type TrackerEvent = {
   teamIds: string[]
 }
 
-interface Props { tripId: string; initialEvents: TrackerEvent[]; teams: Team[] }
+interface Props { tripId: string; initialEvents: TrackerEvent[]; teams: Team[]; calendarUrl?: string; calendarHttpUrl?: string }
 
 type EditingCell = { id: string; field: 'title' | 'venue' | 'notes' | 'time' }
 
 const INPUT_CLASS = 'w-full bg-transparent border-b border-indigo-400 outline-none text-sm py-0.5'
 
-export function BookingTracker({ tripId, initialEvents, teams }: Props) {
+export function BookingTracker({ tripId, initialEvents, teams, calendarUrl, calendarHttpUrl }: Props) {
   const { toast } = useToast()
   const [events, setEvents] = useState(initialEvents)
   const [filterStatus, setFilterStatus] = useState<string>('all')
@@ -163,6 +163,17 @@ export function BookingTracker({ tripId, initialEvents, teams }: Props) {
       {/* Summary bar */}
       <div className="bg-white border-b border-gray-200 px-6 py-3 flex items-center gap-6 shrink-0">
         <h1 className="text-base font-semibold text-gray-900 mr-auto">Bookings</h1>
+        {calendarUrl && calendarHttpUrl && (
+          <button
+            onClick={() => {
+              navigator.clipboard.writeText(calendarUrl)
+              toast('Calendar link copied — paste into any calendar app to subscribe')
+            }}
+            className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-indigo-600 border border-gray-200 hover:border-indigo-300 rounded-lg px-3 py-1.5 transition-colors"
+          >
+            <Share2 size={14} /> Share calendar
+          </button>
+        )}
         <button
           onClick={addAllToGCal}
           className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-indigo-600 border border-gray-200 hover:border-indigo-300 rounded-lg px-3 py-1.5 transition-colors"
