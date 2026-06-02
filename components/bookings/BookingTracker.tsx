@@ -1,6 +1,6 @@
 'use client'
 import { useState } from 'react'
-import { ClipboardCopy, CalendarPlus, CalendarDays, Share2 } from 'lucide-react'
+import { ClipboardCopy, CalendarPlus, CalendarDays, Share2, Download } from 'lucide-react'
 import { formatTime } from '@/lib/utils'
 import { buildGCalUrl } from '@/lib/gcal'
 import { StatusPill } from './StatusPill'
@@ -163,6 +163,15 @@ export function BookingTracker({ tripId, initialEvents, teams, calendarUrl, cale
       {/* Summary bar */}
       <div className="bg-white border-b border-gray-200 px-6 py-3 flex items-center gap-6 shrink-0">
         <h1 className="text-base font-semibold text-gray-900 mr-auto">Bookings</h1>
+        {calendarHttpUrl && (
+          <a
+            href={calendarHttpUrl}
+            download
+            className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-indigo-600 border border-gray-200 hover:border-indigo-300 rounded-lg px-3 py-1.5 transition-colors"
+          >
+            <Download size={14} /> Download calendar
+          </a>
+        )}
         {calendarUrl && calendarHttpUrl && (
           <button
             onClick={() => {
