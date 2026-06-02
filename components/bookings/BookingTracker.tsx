@@ -1,7 +1,8 @@
 'use client'
 import { useState } from 'react'
-import { ClipboardCopy } from 'lucide-react'
+import { ClipboardCopy, CalendarPlus, CalendarDays } from 'lucide-react'
 import { formatTime } from '@/lib/utils'
+import { buildGCalUrl } from '@/lib/gcal'
 import { StatusPill } from './StatusPill'
 import { updateEventStatus } from '@/app/trips/[tripId]/bookings/actions'
 import { updateEvent } from '@/app/trips/[tripId]/week/actions'
@@ -90,14 +91,24 @@ export function BookingTracker({ tripId, initialEvents, teams }: Props) {
     grouped[ev.date].push(ev)
   }
 
-  function getTeamNames(teamIds: string[]) {
-    return teamIds.map(id => teams.find(t => t.id === id)?.name ?? '').filter(Boolean).join(', ')
-  }
-
   function dayLabel(d: string) {
     return new Date(d + 'T00:00:00').toLocaleDateString('en-US', {
       weekday: 'long', month: 'long', day: 'numeric',
     })
+  }
+
+  function getTeamNamesForEvent(ev: TrackerEvent) {
+    return ev.teamIds.map(id => teams.find(t => t.id === id)?.name ?? '').filter(Boolean).join(', ')
+  }
+
+  function addAllToGCal() {
+    const sorted = [...events].sort((a, b) => {
+      if (a.date !== b.date) return a.date.localeCompare(b.date)
+      return (a.start_time ?? '').localeCompare(b.start_time ?? '')
+    })
+    for (const ev of sorted) {
+      window.open(buildGCalUrl({ ...ev, teamNames: getTeamNamesForEvent(ev) }), '_blank')
+    }
   }
 
   function copyAgenda() {
@@ -152,6 +163,12 @@ export function BookingTracker({ tripId, initialEvents, teams }: Props) {
       {/* Summary bar */}
       <div className="bg-white border-b border-gray-200 px-6 py-3 flex items-center gap-6 shrink-0">
         <h1 className="text-base font-semibold text-gray-900 mr-auto">Bookings</h1>
+        <button
+          onClick={addAllToGCal}
+          className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-indigo-600 border border-gray-200 hover:border-indigo-300 rounded-lg px-3 py-1.5 transition-colors"
+        >
+          <CalendarPlus size={14} /> Add all to Google Calendar
+        </button>
         <button
           onClick={copyAgenda}
           className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-indigo-600 border border-gray-200 hover:border-indigo-300 rounded-lg px-3 py-1.5 transition-colors"
@@ -219,7 +236,8 @@ export function BookingTracker({ tripId, initialEvents, teams }: Props) {
                   <col className="w-20" />
                   <col className="w-32" />
                   <col className="w-[18%]" />
-                  <col className="w-[16%]" />
+                  <col className="w-[14%]" />
+                  <col className="w-10" />
                 </colgroup>
                 <tbody className="divide-y divide-gray-50">
                   {dayEvents.map(ev => (
@@ -261,7 +279,7 @@ export function BookingTracker({ tripId, initialEvents, teams }: Props) {
 
                       {/* Teams — read-only */}
                       <td className="px-3 py-3 text-sm text-gray-500 break-words">
-                        {getTeamNames(ev.teamIds) || 'All teams'}
+                        {getTeamNamesForEvent(ev) || 'All teams'}
                       </td>
 
                       {/* Headcount — read-only */}
@@ -316,6 +334,19 @@ export function BookingTracker({ tripId, initialEvents, teams }: Props) {
                         ) : (
                           ev.notes ?? <span className="text-gray-200">—</span>
                         )}
+                      </td>
+
+                      {/* GCal per-event */}
+                      <td className="px-2 py-3 text-center">
+                        <a
+                          href={buildGCalUrl({ ...ev, teamNames: getTeamNamesForEvent(ev) })}
+                          target="_blank"
+                          rel="noreferrer"
+                          title="Add to Google Calendar"
+                          className="inline-flex items-center justify-center text-gray-300 hover:text-indigo-500 transition-colors"
+                        >
+                          <CalendarDays size={15} />
+                        </a>
                       </td>
                     </tr>
                   ))}
