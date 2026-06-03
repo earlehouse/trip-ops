@@ -1,6 +1,6 @@
 'use client'
 import { useState } from 'react'
-import { Plus, Download, ChevronUp, ChevronDown, RefreshCw } from 'lucide-react'
+import { Plus, Download, ChevronUp, ChevronDown, RefreshCw, Copy } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { updateGuest, addGuest, deleteGuest } from '@/app/trips/[tripId]/roster/actions'
 import { CanvasSyncPanel } from './CanvasSyncPanel'
@@ -127,6 +127,16 @@ export function GuestTable({ tripId, trip, initialGuests, teams }: Props) {
           <option value="all">All teams</option>
           {teams.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
         </select>
+        <button
+          onClick={() => {
+            const emails = filtered.map(g => g.email).filter(Boolean).join(', ')
+            navigator.clipboard.writeText(emails)
+            toast('Emails copied to clipboard')
+          }}
+          className="flex items-center gap-1.5 text-sm text-gray-600 border border-gray-200 rounded-lg px-3 py-1.5 hover:bg-gray-50"
+        >
+          <Copy size={14} /> Copy emails
+        </button>
         <button onClick={() => setShowSync(true)} className="flex items-center gap-1.5 text-sm text-gray-600 border border-gray-200 rounded-lg px-3 py-1.5 hover:bg-gray-50">
           <RefreshCw size={14} /> Sync from Canvas
         </button>
