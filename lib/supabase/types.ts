@@ -60,6 +60,7 @@ export interface Database {
           hotel_confirmation: string | null
           notes: string | null
           traveler_id: string | null
+          email: string | null
         }
         Insert: Omit<Database['public']['Tables']['guests']['Row'], 'id'> & { id?: string }
         Update: Partial<Database['public']['Tables']['guests']['Insert']>

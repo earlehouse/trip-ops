@@ -10,6 +10,7 @@ import type { Trip, Team } from '@/lib/supabase/types'
 type Guest = {
   id: string; trip_id: string; team_id: string | null; name: string
   phone_number: string | null
+  email: string | null
   arrival_date: string | null; arrival_time: string | null
   departure_date: string | null; departure_time: string | null
   hotel_confirmation: string | null
@@ -74,10 +75,11 @@ export function GuestTable({ tripId, trip, initialGuests, teams }: Props) {
 
   function exportCsv() {
     const rows = [
-      ['Name', 'Team', 'Phone', 'Arrival', 'Departure', 'Hotel Confirmation', 'Marriott #', 'Hilton #', 'Notes'],
+      ['Name', 'Team', 'Email', 'Phone', 'Arrival', 'Departure', 'Hotel Confirmation', 'Marriott #', 'Hilton #', 'Notes'],
       ...filtered.map(g => [
         g.name,
         g.team?.name ?? '',
+        g.email ?? '',
         g.phone_number ?? '',
         [g.arrival_date, g.arrival_time ? fmtTime(g.arrival_time) : ''].filter(Boolean).join(' '),
         [g.departure_date, g.departure_time ? fmtTime(g.departure_time) : ''].filter(Boolean).join(' '),
@@ -102,6 +104,7 @@ export function GuestTable({ tripId, trip, initialGuests, teams }: Props) {
   const cols: { label: string; key?: SortKey }[] = [
     { label: 'Name', key: 'name' },
     { label: 'Team', key: 'team' },
+    { label: 'Email' },
     { label: 'Phone' },
     { label: 'Arrival', key: 'arrival' },
     { label: 'Departure' },
@@ -218,6 +221,7 @@ function GuestRow({ guest, teams, onUpdate, onDelete }: {
     <tr className="group hover:bg-gray-50">
       <EditCell value={guest.name} onSave={v => onUpdate(guest.id, 'name', v)} />
       <TeamCell guest={guest} teams={teams} onUpdate={onUpdate} />
+      <EditCell value={guest.email} onSave={v => onUpdate(guest.id, 'email', v)} placeholder="—" />
       <EditCell value={guest.phone_number} onSave={v => onUpdate(guest.id, 'phone_number', v)} placeholder="—" />
       <DateTimeCell
         date={guest.arrival_date}
