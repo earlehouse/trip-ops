@@ -7,7 +7,7 @@ export default async function TravelersPage() {
 
   const { data, error } = await supabase
     .from('travelers')
-    .select('id, name, marriott_loyalty, hilton_loyalty')
+    .select('id, name, marriott_loyalty, hilton_loyalty, dietary_restrictions')
     .order('name')
 
   if (error) throw new Error(error.message)
@@ -17,6 +17,7 @@ export default async function TravelersPage() {
     name: row.name as string,
     marriott_loyalty: (row.marriott_loyalty as string | null) ?? null,
     hilton_loyalty: (row.hilton_loyalty as string | null) ?? null,
+    dietary_restrictions: (row.dietary_restrictions as string | null) ?? null,
   }))
 
   return <TravelersDirectory travelers={travelers} />

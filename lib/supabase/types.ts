@@ -72,6 +72,7 @@ export interface Database {
           name: string
           marriott_loyalty: string | null
           hilton_loyalty: string | null
+          dietary_restrictions: string | null
           created_at: string
         }
         Insert: Omit<Database['public']['Tables']['travelers']['Row'], 'id' | 'created_at'> & { id?: string; created_at?: string }

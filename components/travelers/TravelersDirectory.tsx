@@ -10,6 +10,7 @@ export type Traveler = {
   name: string
   marriott_loyalty: string | null
   hilton_loyalty: string | null
+  dietary_restrictions: string | null
 }
 
 type EditRow = Traveler & { isNew?: boolean }
@@ -27,6 +28,7 @@ export function TravelersDirectory({ travelers: initialTravelers }: { travelers:
       name: '',
       marriott_loyalty: null,
       hilton_loyalty: null,
+      dietary_restrictions: null,
       isNew: true,
     }
     setNewRow(draft)
@@ -45,6 +47,7 @@ export function TravelersDirectory({ travelers: initialTravelers }: { travelers:
       name: newRow.name.trim(),
       marriott_loyalty: newRow.marriott_loyalty?.trim() || null,
       hilton_loyalty: newRow.hilton_loyalty?.trim() || null,
+      dietary_restrictions: newRow.dietary_restrictions?.trim() || null,
     }
 
     // Optimistic: add a placeholder
@@ -95,6 +98,7 @@ export function TravelersDirectory({ travelers: initialTravelers }: { travelers:
         name: field === 'name' ? (trimmed ?? traveler.name) : traveler.name,
         marriott_loyalty: field === 'marriott_loyalty' ? trimmed : traveler.marriott_loyalty,
         hilton_loyalty: field === 'hilton_loyalty' ? trimmed : traveler.hilton_loyalty,
+        dietary_restrictions: field === 'dietary_restrictions' ? trimmed : traveler.dietary_restrictions,
       })
     } catch {
       // Roll back
@@ -152,9 +156,10 @@ export function TravelersDirectory({ travelers: initialTravelers }: { travelers:
           <table className="min-w-full border-collapse">
             <thead className="sticky top-0 z-10 bg-gray-50 border-b border-gray-200">
               <tr>
-                <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide w-64">Name</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide w-56">Marriott #</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide w-56">Hilton #</th>
+                <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide w-48">Name</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide w-44">Marriott #</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide w-44">Hilton #</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Dietary Restrictions</th>
                 <th className="px-4 py-3 w-16" />
               </tr>
             </thead>
@@ -239,6 +244,16 @@ function NewTravelerRow({
         />
       </td>
       <td className="px-4 py-2">
+        <input
+          type="text"
+          value={row.dietary_restrictions ?? ''}
+          onChange={e => onChange({ ...row, dietary_restrictions: e.target.value || null })}
+          onKeyDown={handleKeyDown}
+          placeholder="e.g. Vegetarian, no nuts"
+          className="w-full text-sm text-gray-700 placeholder-gray-400 border border-gray-200 rounded-md px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white"
+        />
+      </td>
+      <td className="px-4 py-2">
         <div className="flex items-center gap-1.5">
           <button
             onClick={onSave}
@@ -307,6 +322,14 @@ function TravelerRow({
             </span>
           )}
         </div>
+      </td>
+      <td className="px-4 py-2">
+        <InlineField
+          value={traveler.dietary_restrictions ?? ''}
+          placeholder="—"
+          className="text-gray-700 text-sm"
+          onBlur={val => onBlur(traveler, 'dietary_restrictions', val)}
+        />
       </td>
       <td className="px-4 py-2">
         <button

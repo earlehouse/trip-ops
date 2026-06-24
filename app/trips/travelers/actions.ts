@@ -7,6 +7,7 @@ export async function upsertTraveler(data: {
   name: string
   marriott_loyalty: string | null
   hilton_loyalty: string | null
+  dietary_restrictions: string | null
 }) {
   const supabase = await createClient()
 
@@ -17,6 +18,7 @@ export async function upsertTraveler(data: {
         name: data.name,
         marriott_loyalty: data.marriott_loyalty,
         hilton_loyalty: data.hilton_loyalty,
+        dietary_restrictions: data.dietary_restrictions,
       })
       .eq('id', data.id)
     if (error) throw new Error(error.message)
@@ -29,6 +31,7 @@ export async function upsertTraveler(data: {
           name: data.name,
           marriott_loyalty: data.marriott_loyalty,
           hilton_loyalty: data.hilton_loyalty,
+          dietary_restrictions: data.dietary_restrictions,
         },
         { onConflict: 'lower(trim(name))' }
       )
