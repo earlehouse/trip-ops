@@ -1,9 +1,13 @@
 'use client'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { CalendarDays, Users, BookOpen, Home, Map, LayoutDashboard, TableProperties, Users2, Layers, LogOut } from 'lucide-react'
+import { useState } from 'react'
+import { CalendarDays, Users, BookOpen, Home, Map, LayoutDashboard, TableProperties, Users2, Layers, LogOut, ChevronDown, ChevronRight as ChevronRightIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { signOut } from '@/app/auth/actions'
+
+type TripListGroup = { id: string; name: string; trips: Array<{ id: string; name: string }> }
+type TripListItem = { id: string; name: string }
 
 interface SidebarProps {
   tripId?: string
@@ -13,10 +17,15 @@ interface SidebarProps {
     name: string
     subTrips: Array<{ id: string; name: string }>
   }
+  allTrips?: {
+    groups: TripListGroup[]
+    standalone: TripListItem[]
+  }
 }
 
-export function Sidebar({ tripId, tripName, group }: SidebarProps) {
+export function Sidebar({ tripId, tripName, group, allTrips }: SidebarProps) {
   const pathname = usePathname()
+  const [tripsOpen, setTripsOpen] = useState(true)
 
   const tripNav = tripId ? [
     { href: `/trips/${tripId}/overview`, label: 'Overview', icon: LayoutDashboard },
@@ -38,6 +47,41 @@ export function Sidebar({ tripId, tripName, group }: SidebarProps) {
         <NavItem href="/trips" label="All Trips" icon={Home} active={pathname === '/trips'} />
         <NavItem href="/trips/overview" label="Master Plan" icon={TableProperties} active={pathname === '/trips/overview'} />
         <NavItem href="/trips/travelers" label="Travelers" icon={Users2} active={pathname === '/trips/travelers'} />
+
+        {/* Collapsible trips list */}
+        {allTrips && (allTrips.groups.length > 0 || allTrips.standalone.length > 0) && (
+          <div className="pt-3">
+            <button
+              onClick={() => setTripsOpen(o => !o)}
+              className="flex items-center gap-1 w-full px-2 pb-1 text-xs font-medium text-gray-400 uppercase tracking-wider hover:text-gray-600 transition-colors"
+            >
+              {tripsOpen ? <ChevronDown size={11} /> : <ChevronRightIcon size={11} />}
+              Trips
+            </button>
+            {tripsOpen && (
+              <div className="space-y-0.5">
+                {allTrips.groups.map(g => (
+                  <TripGroupItem key={g.id} group={g} activeTripId={tripId} pathname={pathname} />
+                ))}
+                {allTrips.standalone.map(t => (
+                  <Link
+                    key={t.id}
+                    href={`/trips/${t.id}/overview`}
+                    className={cn(
+                      'flex items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors',
+                      tripId === t.id
+                        ? 'bg-indigo-50 text-indigo-700 font-medium'
+                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                    )}
+                  >
+                    <span className={cn('w-1.5 h-1.5 rounded-full shrink-0', tripId === t.id ? 'bg-indigo-500' : 'bg-gray-300')} />
+                    <span className="truncate">{t.name}</span>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Group section: shown when viewing a group or a sub-trip within a group */}
         {group && (
@@ -118,6 +162,47 @@ export function Sidebar({ tripId, tripName, group }: SidebarProps) {
         </form>
       </div>
     </aside>
+  )
+}
+
+function TripGroupItem({ group, activeTripId, pathname }: {
+  group: TripListGroup
+  activeTripId?: string
+  pathname: string
+}) {
+  const hasActive = group.trips.some(t => t.id === activeTripId)
+  const [open, setOpen] = useState(hasActive)
+
+  return (
+    <div>
+      <button
+        onClick={() => setOpen(o => !o)}
+        className="flex items-center gap-1.5 w-full rounded-md px-2 py-1.5 text-sm text-gray-500 hover:bg-gray-50 hover:text-gray-800 transition-colors"
+      >
+        {open ? <ChevronDown size={11} className="shrink-0" /> : <ChevronRightIcon size={11} className="shrink-0" />}
+        <Layers size={12} className="text-indigo-400 shrink-0" />
+        <span className="truncate font-medium">{group.name}</span>
+      </button>
+      {open && (
+        <div className="ml-3 border-l border-indigo-100 pl-2 space-y-0.5">
+          {group.trips.map(t => (
+            <Link
+              key={t.id}
+              href={`/trips/${t.id}/overview`}
+              className={cn(
+                'flex items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors',
+                activeTripId === t.id
+                  ? 'bg-indigo-50 text-indigo-700 font-medium'
+                  : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+              )}
+            >
+              <span className={cn('w-1.5 h-1.5 rounded-full shrink-0', activeTripId === t.id ? 'bg-indigo-500' : 'bg-gray-300')} />
+              <span className="truncate">{t.name}</span>
+            </Link>
+          ))}
+        </div>
+      )}
+    </div>
   )
 }
 

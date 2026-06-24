@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { Sidebar } from '@/components/ui/Sidebar'
+import { SidebarServer } from '@/components/ui/SidebarServer'
 import { notFound } from 'next/navigation'
 
 export default async function GroupLayout({
@@ -32,7 +32,7 @@ export default async function GroupLayout({
 
   return (
     <div className="flex h-full min-h-screen">
-      <Sidebar group={{ id: group.id, name: group.name, subTrips }} />
+      <SidebarServer group={{ id: group.id, name: group.name, subTrips }} />
       <main className="flex-1 overflow-auto">{children}</main>
     </div>
   )

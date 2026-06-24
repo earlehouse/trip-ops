@@ -1,9 +1,9 @@
-import { Sidebar } from '@/components/ui/Sidebar'
+import { SidebarServer } from '@/components/ui/SidebarServer'
 
 export default function OverviewLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex h-full min-h-screen">
-      <Sidebar />
+      <SidebarServer />
       <main className="flex-1 overflow-auto">{children}</main>
     </div>
   )

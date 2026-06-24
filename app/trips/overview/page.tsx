@@ -14,7 +14,7 @@ export default async function MasterOverviewPage() {
       .order('start_date', { ascending: true }),
     supabase
       .from('trip_groups')
-      .select('id, name, start_date, end_date')
+      .select('id, name, start_date, end_date, notes')
       .order('start_date', { ascending: true }),
   ])
 

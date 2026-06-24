@@ -22,6 +22,7 @@ export interface Database {
           office_location: string
           start_date: string
           end_date: string
+          notes: string | null
           slack_canvas_url: string | null
           group_id: string | null
           created_at: string

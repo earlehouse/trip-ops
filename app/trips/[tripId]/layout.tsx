@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { Sidebar } from '@/components/ui/Sidebar'
+import { SidebarServer } from '@/components/ui/SidebarServer'
 import { notFound } from 'next/navigation'
 
 export default async function TripLayout({
@@ -44,7 +44,7 @@ export default async function TripLayout({
 
   return (
     <div className="flex h-full min-h-screen">
-      <Sidebar tripId={trip.id} tripName={trip.name} group={group} />
+      <SidebarServer tripId={trip.id} tripName={trip.name} group={group} />
       <main className="flex-1 overflow-auto">{children}</main>
     </div>
   )

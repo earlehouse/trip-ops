@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { TripListClient } from './TripListClient'
+import { SidebarServer } from '@/components/ui/SidebarServer'
 import type { Trip, Team, TripGroup } from '@/lib/supabase/types'
 
 export default async function TripsPage() {
@@ -60,11 +61,16 @@ export default async function TripsPage() {
   }
 
   return (
-    <TripListClient
-      standaloneTrips={standaloneTrips}
-      groups={groups}
-      subTripsByGroup={subTripsByGroup}
-      allGroups={groups.map(g => ({ id: g.id, name: g.name }))}
-    />
+    <div className="flex h-full min-h-screen">
+      <SidebarServer />
+      <main className="flex-1 overflow-auto">
+        <TripListClient
+          standaloneTrips={standaloneTrips}
+          groups={groups}
+          subTripsByGroup={subTripsByGroup}
+          allGroups={groups.map(g => ({ id: g.id, name: g.name }))}
+        />
+      </main>
+    </div>
   )
 }

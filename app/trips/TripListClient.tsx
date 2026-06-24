@@ -2,11 +2,10 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Plus, MapPin, Users, AlertCircle, Calendar, Layers, Trash2 } from 'lucide-react'
-import { formatDate } from '@/lib/utils'
+import { Plus, MapPin, Users, AlertCircle, Calendar, Layers, Trash2, ChevronDown } from 'lucide-react'
+import { formatDate, cn } from '@/lib/utils'
 import { NewTripModal } from './NewTripModal'
 import { NewGroupModal } from './groups/NewGroupModal'
-import { Sidebar } from '@/components/ui/Sidebar'
 import { deleteTrip } from './actions'
 import { deleteGroup } from './groups/[groupId]/actions'
 import type { Trip, Team, TripGroup } from '@/lib/supabase/types'
@@ -29,89 +28,108 @@ interface Props {
 export function TripListClient({ standaloneTrips, groups, subTripsByGroup, allGroups }: Props) {
   const [showTripModal, setShowTripModal] = useState(false)
   const [showGroupModal, setShowGroupModal] = useState(false)
+  const [pastOpen, setPastOpen] = useState(false)
 
+  const today = new Date().toISOString().slice(0, 10)
+
+  const upcomingGroups = groups.filter(g => g.end_date >= today)
+  const pastGroups = groups.filter(g => g.end_date < today)
+  const upcomingTrips = standaloneTrips.filter(t => t.end_date >= today)
+  const pastTrips = standaloneTrips.filter(t => t.end_date < today)
+
+  const hasUpcoming = upcomingTrips.length > 0 || upcomingGroups.length > 0
+  const hasPast = pastTrips.length > 0 || pastGroups.length > 0
   const hasContent = standaloneTrips.length > 0 || groups.length > 0
 
   return (
-    <div className="flex h-full min-h-screen">
-      <Sidebar />
-      <main className="flex-1 overflow-auto">
-        <div className="max-w-3xl mx-auto px-6 py-10">
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">Trips</h1>
-              <p className="text-sm text-gray-500 mt-0.5">All offsites in one place</p>
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setShowGroupModal(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-white text-gray-700 text-sm font-medium rounded-lg border border-gray-200 hover:border-indigo-300 hover:text-indigo-700 transition-colors"
-              >
-                <Layers size={16} /> New group
-              </button>
-              <button
-                onClick={() => setShowTripModal(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors"
-              >
-                <Plus size={16} /> New trip
-              </button>
-            </div>
-          </div>
+    <div className="max-w-3xl mx-auto px-6 py-10">
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Trips</h1>
+          <p className="text-sm text-gray-500 mt-0.5">All offsites in one place</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowGroupModal(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-white text-gray-700 text-sm font-medium rounded-lg border border-gray-200 hover:border-indigo-300 hover:text-indigo-700 transition-colors"
+          >
+            <Layers size={16} /> New group
+          </button>
+          <button
+            onClick={() => setShowTripModal(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors"
+          >
+            <Plus size={16} /> New trip
+          </button>
+        </div>
+      </div>
 
-          {!hasContent ? (
-            <div className="text-center py-20 text-gray-400">
-              <Calendar size={40} className="mx-auto mb-3 opacity-40" />
-              <p className="text-base font-medium">No trips yet</p>
-              <p className="text-sm mt-1">Create your first trip or group to get started</p>
-              <button
-                onClick={() => setShowTripModal(true)}
-                className="mt-4 inline-flex items-center gap-1.5 text-indigo-600 hover:text-indigo-800 text-sm font-medium"
-              >
-                <Plus size={14} /> Create trip
-              </button>
+      {!hasContent ? (
+        <div className="text-center py-20 text-gray-400">
+          <Calendar size={40} className="mx-auto mb-3 opacity-40" />
+          <p className="text-base font-medium">No trips yet</p>
+          <p className="text-sm mt-1">Create your first trip or group to get started</p>
+          <button
+            onClick={() => setShowTripModal(true)}
+            className="mt-4 inline-flex items-center gap-1.5 text-indigo-600 hover:text-indigo-800 text-sm font-medium"
+          >
+            <Plus size={14} /> Create trip
+          </button>
+        </div>
+      ) : (
+        <div className="space-y-5">
+          {/* Upcoming groups */}
+          {upcomingGroups.map(group => {
+            const subs = subTripsByGroup[group.id] ?? []
+            const totalGuests = subs.reduce((sum, t) => sum + t.guestCount, 0)
+            return <GroupCard key={group.id} group={group} subTrips={subs} totalGuests={totalGuests} />
+          })}
+
+          {/* Upcoming standalone trips */}
+          {upcomingTrips.length > 0 && (
+            <div className="space-y-3">
+              {upcomingGroups.length > 0 && (
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider px-1">Standalone trips</p>
+              )}
+              {upcomingTrips.map(trip => <TripCard key={trip.id} trip={trip} />)}
             </div>
-          ) : (
-            <div className="space-y-5">
-              {/* Groups section */}
-              {groups.length > 0 && (
-                <div className="space-y-3">
-                  {groups.map(group => {
+          )}
+
+          {!hasUpcoming && hasPast && (
+            <p className="text-sm text-gray-400 text-center py-4">No upcoming trips</p>
+          )}
+
+          {/* Past trips — collapsible */}
+          {hasPast && (
+            <div className="pt-2">
+              <button
+                onClick={() => setPastOpen(o => !o)}
+                className="flex items-center gap-2 w-full px-1 py-1.5 text-xs font-semibold text-gray-400 uppercase tracking-wider hover:text-gray-600 transition-colors"
+              >
+                <ChevronDown size={13} className={cn('transition-transform', pastOpen ? '' : '-rotate-90')} />
+                Past Trips ({pastGroups.length + pastTrips.length})
+              </button>
+              {pastOpen && (
+                <div className="space-y-3 mt-2 opacity-70">
+                  {pastGroups.map(group => {
                     const subs = subTripsByGroup[group.id] ?? []
                     const totalGuests = subs.reduce((sum, t) => sum + t.guestCount, 0)
-                    return (
-                      <GroupCard
-                        key={group.id}
-                        group={group}
-                        subTrips={subs}
-                        totalGuests={totalGuests}
-                      />
-                    )
+                    return <GroupCard key={group.id} group={group} subTrips={subs} totalGuests={totalGuests} />
                   })}
-                </div>
-              )}
-
-              {/* Standalone trips */}
-              {standaloneTrips.length > 0 && (
-                <div className="space-y-3">
-                  {groups.length > 0 && (
-                    <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider px-1">Standalone trips</p>
-                  )}
-                  {standaloneTrips.map(trip => (
-                    <TripCard key={trip.id} trip={trip} />
-                  ))}
+                  {pastTrips.map(trip => <TripCard key={trip.id} trip={trip} />)}
                 </div>
               )}
             </div>
           )}
-
-          {showTripModal && (
-            <NewTripModal onClose={() => setShowTripModal(false)} groups={allGroups} />
-          )}
-          {showGroupModal && (
-            <NewGroupModal onClose={() => setShowGroupModal(false)} />
-          )}
         </div>
-      </main>
+      )}
+
+      {showTripModal && (
+        <NewTripModal onClose={() => setShowTripModal(false)} groups={allGroups} />
+      )}
+      {showGroupModal && (
+        <NewGroupModal onClose={() => setShowGroupModal(false)} />
+      )}
     </div>
   )
 }

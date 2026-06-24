@@ -10,6 +10,7 @@ export async function updateGroupNotes(groupId: string, notes: string | null) {
     .eq('id', groupId)
   if (error) throw new Error(error.message)
   revalidatePath(`/trips/groups/${groupId}`)
+  revalidatePath('/trips/overview')
 }
 
 export async function createGroup(data: { name: string; start_date: string; end_date: string }) {

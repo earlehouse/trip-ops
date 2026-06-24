@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { CheckCircle, AlertCircle, ChevronRight, Layers } from 'lucide-react'
 import { cn, formatTime } from '@/lib/utils'
 import { updateTripNotes } from '@/app/trips/[tripId]/overview/actions'
+import { updateGroupNotes } from '@/app/trips/groups/[groupId]/actions'
 import { useToast } from '@/components/ui/Toast'
 
 type EventRow = { id: string; title: string; date: string; start_time: string | null; booking_status: string; trip_id?: string }
@@ -21,7 +22,7 @@ type OverviewRow = {
   agendaTotal: number
 }
 
-type TripGroup = { id: string; name: string; start_date: string; end_date: string }
+type TripGroup = { id: string; name: string; start_date: string; end_date: string; notes?: string | null }
 
 interface Props {
   standaloneRows: OverviewRow[]
@@ -100,9 +101,22 @@ export function MasterOverview({ standaloneRows, groups, rowsByGroup }: Props) {
 }
 
 function GroupHeaderRow({ group }: { group: TripGroup }) {
+  const { toast } = useToast()
+  const [notes, setNotes] = useState(group.notes ?? '')
+  const [saving, setSaving] = useState(false)
+
+  async function saveNotes() {
+    setSaving(true)
+    try {
+      await updateGroupNotes(group.id, notes || null)
+      toast('Saved')
+    } catch { toast('Failed to save', 'error') }
+    finally { setSaving(false) }
+  }
+
   return (
     <tr className="bg-indigo-50/60 border-t-2 border-indigo-100">
-      <td colSpan={5} className="px-5 py-2.5">
+      <td colSpan={4} className="px-5 py-2.5">
         <Link
           href={`/trips/groups/${group.id}`}
           className="inline-flex items-center gap-2 group/link"
@@ -114,6 +128,16 @@ function GroupHeaderRow({ group }: { group: TripGroup }) {
           <span className="text-xs text-indigo-400">{dateRange(group.start_date, group.end_date)}</span>
           <ChevronRight size={12} className="text-indigo-300 group-hover/link:text-indigo-500 transition-colors" />
         </Link>
+      </td>
+      <td className="px-4 py-2 min-w-[200px]">
+        <textarea
+          value={notes}
+          onChange={e => setNotes(e.target.value)}
+          onBlur={saveNotes}
+          placeholder="Group notes…"
+          rows={1}
+          className="w-full text-xs text-indigo-700 placeholder-indigo-300 border border-transparent hover:border-indigo-200 focus:border-indigo-200 rounded-md px-2 py-1 focus:outline-none focus:ring-1 focus:ring-indigo-400 resize-none transition-colors bg-transparent hover:bg-white/70 focus:bg-white"
+        />
       </td>
     </tr>
   )
