@@ -29,8 +29,8 @@ export async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname
   const isPublic = pathname.startsWith('/login') || pathname.startsWith('/auth') || pathname.startsWith('/api/')
 
-  // Not logged in → send to login
-  if (!user && !isPublic) {
+  // Not logged in → send to login (skipped in local dev so you can work without a Supabase session)
+  if (!user && !isPublic && process.env.NODE_ENV !== 'development') {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     return NextResponse.redirect(url)
