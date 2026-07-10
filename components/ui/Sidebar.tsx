@@ -2,7 +2,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
-import { CalendarDays, Users, BookOpen, Home, Map, LayoutDashboard, TableProperties, Users2, Layers, LogOut, ChevronDown, ChevronRight as ChevronRightIcon } from 'lucide-react'
+import { CalendarDays, CalendarRange, Users, BookOpen, Home, Map, LayoutDashboard, TableProperties, Users2, Layers, LogOut, ChevronDown, ChevronRight as ChevronRightIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { signOut } from '@/app/auth/actions'
 
@@ -45,6 +45,7 @@ export function Sidebar({ tripId, tripName, group, allTrips }: SidebarProps) {
 
       <nav className="flex-1 px-2 py-4 space-y-0.5">
         <NavItem href="/trips" label="All Trips" icon={Home} active={pathname === '/trips'} />
+        <NavItem href="/trips/calendar" label="Calendar" icon={CalendarRange} active={pathname === '/trips/calendar'} />
         <NavItem href="/trips/overview" label="Master Plan" icon={TableProperties} active={pathname === '/trips/overview'} />
         <NavItem href="/trips/travelers" label="Travelers" icon={Users2} active={pathname === '/trips/travelers'} />
 
