@@ -18,6 +18,10 @@ interface TripRow extends Trip {
 
 interface GroupOption { id: string; name: string }
 
+type ListEntry =
+  | { kind: 'group'; start_date: string; group: TripGroup; subTrips: TripRow[]; totalGuests: number }
+  | { kind: 'trip'; start_date: string; trip: TripRow }
+
 interface Props {
   standaloneTrips: TripRow[]
   groups: TripGroup[]
@@ -36,6 +40,19 @@ export function TripListClient({ standaloneTrips, groups, subTripsByGroup, allGr
   const pastGroups = groups.filter(g => g.end_date < today)
   const upcomingTrips = standaloneTrips.filter(t => t.end_date >= today)
   const pastTrips = standaloneTrips.filter(t => t.end_date < today)
+
+  // Groups and standalone trips interleaved by start date, not grouped-first
+  function toEntries(groupList: TripGroup[], tripList: TripRow[]): ListEntry[] {
+    const groupEntries: ListEntry[] = groupList.map(group => {
+      const subTrips = subTripsByGroup[group.id] ?? []
+      return { kind: 'group', start_date: group.start_date, group, subTrips, totalGuests: subTrips.reduce((sum, t) => sum + t.guestCount, 0) }
+    })
+    const tripEntries: ListEntry[] = tripList.map(trip => ({ kind: 'trip', start_date: trip.start_date, trip }))
+    return [...groupEntries, ...tripEntries].sort((a, b) => a.start_date.localeCompare(b.start_date))
+  }
+
+  const upcomingEntries = toEntries(upcomingGroups, upcomingTrips)
+  const pastEntries = toEntries(pastGroups, pastTrips)
 
   const hasUpcoming = upcomingTrips.length > 0 || upcomingGroups.length > 0
   const hasPast = pastTrips.length > 0 || pastGroups.length > 0
@@ -78,20 +95,16 @@ export function TripListClient({ standaloneTrips, groups, subTripsByGroup, allGr
         </div>
       ) : (
         <div className="space-y-5">
-          {/* Upcoming groups */}
-          {upcomingGroups.map(group => {
-            const subs = subTripsByGroup[group.id] ?? []
-            const totalGuests = subs.reduce((sum, t) => sum + t.guestCount, 0)
-            return <GroupCard key={group.id} group={group} subTrips={subs} totalGuests={totalGuests} />
-          })}
-
-          {/* Upcoming standalone trips */}
-          {upcomingTrips.length > 0 && (
+          {/* Upcoming groups + standalone trips, interleaved by start date */}
+          {upcomingEntries.length > 0 && (
             <div className="space-y-3">
-              {upcomingGroups.length > 0 && (
-                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider px-1">Standalone trips</p>
+              {upcomingEntries.map(entry =>
+                entry.kind === 'group' ? (
+                  <GroupCard key={entry.group.id} group={entry.group} subTrips={entry.subTrips} totalGuests={entry.totalGuests} />
+                ) : (
+                  <TripCard key={entry.trip.id} trip={entry.trip} />
+                )
               )}
-              {upcomingTrips.map(trip => <TripCard key={trip.id} trip={trip} />)}
             </div>
           )}
 
@@ -111,12 +124,13 @@ export function TripListClient({ standaloneTrips, groups, subTripsByGroup, allGr
               </button>
               {pastOpen && (
                 <div className="space-y-3 mt-2 opacity-70">
-                  {pastGroups.map(group => {
-                    const subs = subTripsByGroup[group.id] ?? []
-                    const totalGuests = subs.reduce((sum, t) => sum + t.guestCount, 0)
-                    return <GroupCard key={group.id} group={group} subTrips={subs} totalGuests={totalGuests} />
-                  })}
-                  {pastTrips.map(trip => <TripCard key={trip.id} trip={trip} />)}
+                  {pastEntries.map(entry =>
+                    entry.kind === 'group' ? (
+                      <GroupCard key={entry.group.id} group={entry.group} subTrips={entry.subTrips} totalGuests={entry.totalGuests} />
+                    ) : (
+                      <TripCard key={entry.trip.id} trip={entry.trip} />
+                    )
+                  )}
                 </div>
               )}
             </div>

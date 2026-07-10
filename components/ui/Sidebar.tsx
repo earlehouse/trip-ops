@@ -7,7 +7,10 @@ import { cn } from '@/lib/utils'
 import { signOut } from '@/app/auth/actions'
 
 type TripListGroup = { id: string; name: string; trips: Array<{ id: string; name: string }> }
-type TripListItem = { id: string; name: string }
+
+export type NavListItem =
+  | { kind: 'group'; id: string; name: string; start_date: string; trips: Array<{ id: string; name: string }> }
+  | { kind: 'trip'; id: string; name: string; start_date: string }
 
 interface SidebarProps {
   tripId?: string
@@ -17,13 +20,10 @@ interface SidebarProps {
     name: string
     subTrips: Array<{ id: string; name: string }>
   }
-  allTrips?: {
-    groups: TripListGroup[]
-    standalone: TripListItem[]
-  }
+  navItems?: NavListItem[]
 }
 
-export function Sidebar({ tripId, tripName, group, allTrips }: SidebarProps) {
+export function Sidebar({ tripId, tripName, group, navItems }: SidebarProps) {
   const pathname = usePathname()
   const [tripsOpen, setTripsOpen] = useState(true)
 
@@ -49,8 +49,8 @@ export function Sidebar({ tripId, tripName, group, allTrips }: SidebarProps) {
         <NavItem href="/trips/overview" label="Master Plan" icon={TableProperties} active={pathname === '/trips/overview'} />
         <NavItem href="/trips/travelers" label="Travelers" icon={Users2} active={pathname === '/trips/travelers'} />
 
-        {/* Collapsible trips list */}
-        {allTrips && (allTrips.groups.length > 0 || allTrips.standalone.length > 0) && (
+        {/* Collapsible trips list — groups and standalone trips interleaved by start date */}
+        {navItems && navItems.length > 0 && (
           <div className="pt-3">
             <button
               onClick={() => setTripsOpen(o => !o)}
@@ -61,24 +61,25 @@ export function Sidebar({ tripId, tripName, group, allTrips }: SidebarProps) {
             </button>
             {tripsOpen && (
               <div className="space-y-0.5">
-                {allTrips.groups.map(g => (
-                  <TripGroupItem key={g.id} group={g} activeTripId={tripId} pathname={pathname} />
-                ))}
-                {allTrips.standalone.map(t => (
-                  <Link
-                    key={t.id}
-                    href={`/trips/${t.id}/overview`}
-                    className={cn(
-                      'flex items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors',
-                      tripId === t.id
-                        ? 'bg-indigo-50 text-indigo-700 font-medium'
-                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                    )}
-                  >
-                    <span className={cn('w-1.5 h-1.5 rounded-full shrink-0', tripId === t.id ? 'bg-indigo-500' : 'bg-gray-300')} />
-                    <span className="truncate">{t.name}</span>
-                  </Link>
-                ))}
+                {navItems.map(item =>
+                  item.kind === 'group' ? (
+                    <TripGroupItem key={item.id} group={item} activeTripId={tripId} pathname={pathname} />
+                  ) : (
+                    <Link
+                      key={item.id}
+                      href={`/trips/${item.id}/overview`}
+                      className={cn(
+                        'flex items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors',
+                        tripId === item.id
+                          ? 'bg-indigo-50 text-indigo-700 font-medium'
+                          : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                      )}
+                    >
+                      <span className={cn('w-1.5 h-1.5 rounded-full shrink-0', tripId === item.id ? 'bg-indigo-500' : 'bg-gray-300')} />
+                      <span className="truncate">{item.name}</span>
+                    </Link>
+                  )
+                )}
               </div>
             )}
           </div>
