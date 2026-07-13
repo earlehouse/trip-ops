@@ -1,10 +1,11 @@
-import { createClient } from '@/lib/supabase/server'
+import { createServiceRoleClient } from '@/lib/supabase/serviceRole'
+import { isValidServiceKey } from '@/lib/apiAuth'
 import type { NextRequest } from 'next/server'
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
 }
 
 export async function OPTIONS() {
@@ -12,11 +13,15 @@ export async function OPTIONS() {
 }
 
 export async function GET(req: NextRequest) {
+  if (!isValidServiceKey(req)) {
+    return Response.json({ error: 'Unauthorized' }, { status: 401, headers: CORS })
+  }
+
   const { searchParams } = new URL(req.url)
   const start = searchParams.get('start')
   const end = searchParams.get('end')
 
-  const supabase = await createClient()
+  const supabase = createServiceRoleClient()
 
   let query = supabase
     .from('trips')

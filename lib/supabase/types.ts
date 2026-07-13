@@ -25,6 +25,9 @@ export interface Database {
           notes: string | null
           slack_canvas_url: string | null
           group_id: string | null
+          room_requested: string | null
+          purpose: string | null
+          estimated_attendees: number | null
           created_at: string
         }
         Insert: Omit<Database['public']['Tables']['trips']['Row'], 'id' | 'created_at'> & { id?: string; created_at?: string }

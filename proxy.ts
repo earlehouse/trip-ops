@@ -34,6 +34,8 @@ export async function proxy(request: NextRequest) {
   const PUBLIC_API_PATTERNS = [
     /^\/api\/trips\/[^/]+\/calendar$/, // ICS feed for calendar apps
     /^\/api\/slack\/canvas$/,          // Slack webhook, verified via its own signature check
+    /^\/api\/trips$/,                  // office-scheduler read access, verified via its own shared-key check
+    /^\/api\/trip-requests$/,          // office-scheduler push access, verified via its own shared-key check
   ]
   const isPublicApi = PUBLIC_API_PATTERNS.some(p => p.test(pathname))
 
