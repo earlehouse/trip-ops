@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import crypto from 'crypto'
 import Anthropic from '@anthropic-ai/sdk'
-import { createClient } from '@/lib/supabase/server'
+import { createServiceRoleClient } from '@/lib/supabase/serviceRole'
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
@@ -128,7 +128,7 @@ export async function POST(req: NextRequest) {
   if (!canvasId) return NextResponse.json({ ok: true })
 
   try {
-    const supabase = await createClient()
+    const supabase = createServiceRoleClient()
 
     // Find the trip that owns this canvas
     const { data: trips } = await supabase

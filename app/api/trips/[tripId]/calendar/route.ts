@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createServiceRoleClient } from '@/lib/supabase/serviceRole'
 import { buildICS } from '@/lib/ics'
 import type { NextRequest } from 'next/server'
 
@@ -7,7 +7,7 @@ export async function GET(
   { params }: { params: Promise<{ tripId: string }> }
 ) {
   const { tripId } = await params
-  const supabase = await createClient()
+  const supabase = createServiceRoleClient()
 
   const [{ data: tripRaw }, { data: eventsRaw }, { data: teamsRaw }] = await Promise.all([
     supabase.from('trips').select('id, name').eq('id', tripId).single(),
