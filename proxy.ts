@@ -27,7 +27,17 @@ export async function proxy(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
 
   const pathname = request.nextUrl.pathname
-  const isPublic = pathname.startsWith('/login') || pathname.startsWith('/auth') || pathname.startsWith('/api/')
+
+  // Only these specific API routes are reachable without a session — each has its own
+  // reason it can't send cookies (calendar-subscription apps, Slack's webhook caller).
+  // Everything else under /api/ requires login like any other page.
+  const PUBLIC_API_PATTERNS = [
+    /^\/api\/trips\/[^/]+\/calendar$/, // ICS feed for calendar apps
+    /^\/api\/slack\/canvas$/,          // Slack webhook, verified via its own signature check
+  ]
+  const isPublicApi = PUBLIC_API_PATTERNS.some(p => p.test(pathname))
+
+  const isPublic = pathname.startsWith('/login') || pathname.startsWith('/auth') || isPublicApi
 
   // Not logged in → send to login (skipped in local dev so you can work without a Supabase session)
   if (!user && !isPublic && process.env.NODE_ENV !== 'development') {
